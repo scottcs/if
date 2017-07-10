@@ -15,6 +15,9 @@ def get_args():
     """
     arg_parser = argparse.ArgumentParser(description='run the if')
     arg_parser.add_argument('story', help='story to run')
+    arg_parser.add_argument('-D', '--debug',
+                            action='store_true',
+                            help='turn on debugging')
 
     args = arg_parser.parse_args()
     return vars(args)
@@ -24,7 +27,7 @@ def main():
     """ Main function """
     args = get_args()
     print('ARGS: {}'.format(args))
-    game = engine.game.Game(args['story'])
+    game = engine.game.Game(args['story'], args['debug'])
     game.run()
 
 

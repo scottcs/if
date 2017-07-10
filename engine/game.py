@@ -7,6 +7,7 @@ import sys
 
 import lark
 
+import log
 import story
 
 
@@ -25,13 +26,14 @@ def _load_story(story_name):
 class Game(object):
     """ Game Class"""
 
-    def __init__(self, story_name):
+    def __init__(self, story_name, debug=False):
         self._story = _load_story(story_name)
         self._parser = lark.Lark(self._story.grammar)
+        self.log = log.make_log(story_name, debug=debug)
 
     def run(self):
         """ Run the game """
-        print('RUN {}'.format(self._story.name))
+        self.log.info('RUN {}'.format(self._story.name))
         while True:
             command = raw_input('> ')
             # noinspection PyBroadException
@@ -39,9 +41,9 @@ class Game(object):
                 self._parse_command(command)
             except Exception as exc:
                 if isinstance(exc, KeyboardInterrupt):
-                    print('Quitting...')
+                    self.log.info('Quitting...')
                     break
-                print(sys.exc_info()[0])
+                self.log.exception(sys.exc_info()[0])
 
     def _parse_command(self, command):
         """ Parse a command
@@ -58,17 +60,34 @@ class Game(object):
 
         :param command: parsed command
         """
-        print(command)
-        print(dir(command))
-        print(command.data)
-        print(dir(command.data))
-        print(command.children)
-        print(dir(command.children))
         for sub in command.iter_subtrees():
-            print(sub)
-            print(sub.__class__)
-            print(sub.data)
-            for child in sub.children:
-                print(child)
-                print(child.__class__)
-                print(child.type, child.value)
+            if sub.data == 'examine':
+                self._examine(*sub.children)
+            else:
+                self.log.error(sub.children)
+
+    def _examine(self, verb, obj):
+        """ Examine an object
+
+        :param verb: the examine verb token
+        :param obj: the examine object token
+        """
+        self.log.debug('verb: {} ({})   obj: {} ({})'.format(verb, verb.type, obj, obj.type))
+        if verb.type == 'EXAMINE' and obj.type == 'OBJECT':
+            self.log.debug('// PRINT DESCRIPTION OF OBJECT')
+            self._describe(obj.value)
+        else:
+            self.log.error('Unknown grammar: {} {}'.format(verb.type, obj.type))
+
+    def _describe(self, obj):
+        """ Describe an item or room
+
+        :param obj: the item or room to describe
+        """
+        try:
+            print(self._story.items[obj]['description'])
+        except KeyError:
+            try:
+                print(self._story.rooms[obj]['description'])
+            except KeyError:
+                print('I don\'t see {}.'.format(obj))
