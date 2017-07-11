@@ -7,6 +7,7 @@ import sys
 
 import lark
 
+import command
 import log
 import story
 
@@ -29,42 +30,44 @@ class Game(object):
     def __init__(self, story_name, debug=False):
         self._story = _load_story(story_name)
         self._parser = lark.Lark(self._story.grammar)
-        self.log = log.make_log(story_name, debug=debug)
+        log.init(story_name, debugging=debug)
 
     def run(self):
         """ Run the game """
-        self.log.info('RUN {}'.format(self._story.name))
+        log.info('RUN {}'.format(self._story.name))
         while True:
-            command = raw_input('> ')
+            cmd = raw_input('> ')
             # noinspection PyBroadException
             try:
-                self._parse_command(command)
+                self._parse_command(cmd)
             except Exception as exc:
                 if isinstance(exc, KeyboardInterrupt):
-                    self.log.info('Quitting...')
+                    log.info('Quitting...')
                     break
-                self.log.exception(sys.exc_info()[0])
+                log.exception(sys.exc_info()[0])
 
-    def _parse_command(self, command):
+    def _parse_command(self, cmd):
         """ Parse a command
 
-        :param command: raw input command string
+        :param cmd: raw input command string
         """
-        parse_tree = self._parser.parse(command)
-        print(parse_tree.pretty())
+        try:
+            parse_tree = self._parser.parse(cmd)
+        except lark.ParseError:
+            print('I don\'t understand that command.')
+            return
+        log.debug('\n{}'.format(parse_tree.pretty()))
         for instruction in parse_tree.children:
             self._run_command(instruction)
 
-    def _run_command(self, command):
+    def _run_command(self, cmd):
         """ Run a command
 
-        :param command: parsed command
+        :param cmd: parsed command
         """
-        for sub in command.iter_subtrees():
-            if sub.data == 'examine':
-                self._examine(*sub.children)
-            else:
-                self.log.error(sub.children)
+        cmd_obj = command.new(cmd.children[0])
+        if cmd_obj:
+            cmd_obj.run()
 
     def _examine(self, verb, obj):
         """ Examine an object
@@ -72,12 +75,12 @@ class Game(object):
         :param verb: the examine verb token
         :param obj: the examine object token
         """
-        self.log.debug('verb: {} ({})   obj: {} ({})'.format(verb, verb.type, obj, obj.type))
+        log.debug('verb: {} ({})   obj: {} ({})'.format(verb, verb.type, obj, obj.type))
         if verb.type == 'EXAMINE' and obj.type == 'OBJECT':
-            self.log.debug('// PRINT DESCRIPTION OF OBJECT')
+            log.debug('// PRINT DESCRIPTION OF OBJECT')
             self._describe(obj.value)
         else:
-            self.log.error('Unknown grammar: {} {}'.format(verb.type, obj.type))
+            log.error('Unknown grammar: {} {}'.format(verb.type, obj.type))
 
     def _describe(self, obj):
         """ Describe an item or room

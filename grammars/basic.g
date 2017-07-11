@@ -3,9 +3,9 @@
 
 start: instruction
 
-instruction: SIMPLE_MOVEMENT                -> simple_movement
-           | MANIPULATE OBJECT              -> manipulate
-           | EXAMINE _PREPOSITION? OBJECT   -> examine
+instruction: simple_movement
+           | examine
+           | manipulate
            | options
            | help
 
@@ -13,10 +13,23 @@ options: ("options" | "option" | "!") option?
 option: OPTION VALUE?
 help: ("help" | "?") TOPIC?
 
-SIMPLE_MOVEMENT: "n" | "s" | "e" | "w" | "u" | "d"
-EXAMINE: "look" | "l"
+simple_movement: NORTH
+               | SOUTH
+               | EAST
+               | WEST
+               | UP
+               | DOWN
+NORTH: "n" | "go n" | "north" | "go north"
+SOUTH: "s" | "go s" | "south" | "go south"
+EAST: "e" | "go e" | "east" | "go east"
+WEST: "w" | "go w" | "west" | "go west"
+UP: "u" | "go u" | "up" | "go up"
+DOWN: "d" | "go d" | "down" | "go down"
 
-MANIPULATE: TRAVERSE | COLLECT | USE
+examine: LOOK (_PREPOSITION? OBJECT)?
+manipulate: (TRAVERSE | COLLECT | USE) OBJECT
+
+LOOK: "look" | "l"
 TRAVERSE: "enter" | "leave"
 COLLECT: "get" | "drop"
 USE: "open" | "close" | "use" | "press" | "flip"
