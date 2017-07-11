@@ -6,12 +6,13 @@ start: instruction
 instruction: simple_movement
            | examine
            | manipulate
-           | options
+           | option
            | help
 
-options: ("options" | "option" | "!") option?
-option: OPTION VALUE?
-help: ("help" | "?") TOPIC?
+option: OPTION SETTING? | OPTION SETTING VALUE
+OPTION: "options" | "option" | "!"
+help: HELP TOPIC?
+HELP: "help" | "?"
 
 simple_movement: NORTH
                | SOUTH
@@ -36,7 +37,7 @@ USE: "open" | "close" | "use" | "press" | "flip"
 
 OBJECT: TOKEN
 LOCATION: TOKEN
-OPTION: TOKEN
+SETTING: TOKEN
 VALUE: TOKEN
 TOPIC: TOKEN
 _PREPOSITION: "at" | "in" | "on" | "with" | "into" | "from" | "under"
