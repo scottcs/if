@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """ if - command """
 
-import log
+from . import log
 
 
 class _Command(object):

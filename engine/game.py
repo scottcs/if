@@ -7,9 +7,9 @@ import sys
 
 import lark
 
-import command
-import log
-import story
+from . import command
+from . import log
+from . import story
 
 
 def _load_story(story_name):
