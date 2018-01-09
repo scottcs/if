@@ -24,6 +24,14 @@ class _Command(object):
         string += '>'
         return string
 
+    def _usage(self):
+        """ Return usage string list """
+        return ['Usage: command']
+
+    def _description(self):
+        """ Return description string list """
+        return ['I don\'t really know either.']
+
     def run(self):
         """ Run the command """
         log.debug(self)
@@ -47,6 +55,23 @@ class OptionCommand(_Command):
 
 class HelpCommand(_Command):
     """ Help command """
+
+    def run(self):
+        super(HelpCommand, self).run()
+        print('Usage:')
+
+    def _description(self):
+        return [
+            'Get help on a command.',
+            'Supported Commands:',
+            '  help, option, look, north, south, east, west, up, down, open, close',  # TODO: automate this
+        ]
+
+    def _usage(self):
+        return [
+            'help, ? - this help',
+            'help TOPIC, ? TOPIC - get help on TOPIC',
+        ]
 
 
 _COMMAND_TABLE = {
